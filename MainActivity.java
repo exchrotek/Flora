@@ -32,7 +32,7 @@ public class MainActivity extends Activity  {
     protected ArrayAdapter mArrayAdapter;
     ListView lv;
 
-
+    final ArrayAdapter list_discoveries = new ArrayAdapter(this,android.R.layout.simple_list_item_1);
 
      BroadcastReceiver mReceiver;
 
@@ -168,7 +168,7 @@ public class MainActivity extends Activity  {
 
         BA.startDiscovery();
 
-       final ArrayAdapter list_discoveries = new ArrayAdapter(this,android.R.layout.simple_list_item_1);
+
 
 
 
