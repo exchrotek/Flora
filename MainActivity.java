@@ -12,6 +12,7 @@ import android.os.Bundle;
 import android.view.Menu;
 import android.view.MenuItem;
 import android.view.View;
+import android.widget.AdapterView;
 import android.widget.ArrayAdapter;
 import android.widget.Button;
 import android.widget.ListView;
@@ -71,7 +72,15 @@ public class MainActivity extends Activity  {
 //            }
 //        });
         lv.setTextFilterEnabled(true);
+        lv.setOnItemClickListener(new AdapterView.OnItemClickListener() {
+            public void onItemClick(AdapterView <? > arg0, View view, int position, long id) {
+                // When clicked, show a toast with the TextView text
+                Toast.makeText(getApplicationContext(), ((TextView) view).getText(),
+                        Toast.LENGTH_SHORT).show();
 
+            }
+
+        });
 
 
     }
