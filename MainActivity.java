@@ -32,7 +32,7 @@ public class MainActivity extends Activity  {
     protected ArrayAdapter mArrayAdapter;
     ListView lv;
 
-    final ArrayAdapter list_discoveries = new ArrayAdapter(this,android.R.layout.simple_list_item_1);
+    protected ArrayAdapter list_discoveries;
 
      BroadcastReceiver mReceiver;
 
@@ -136,7 +136,7 @@ public class MainActivity extends Activity  {
 
         pairedDevices = BA.getBondedDevices(); //get set of devices
 
-        final ArrayAdapter test =  new ArrayAdapter(this,android.R.layout.simple_list_item_1);
+        mArrayAdapter =  new ArrayAdapter(this,android.R.layout.simple_list_item_1);
 
 
 
@@ -145,10 +145,10 @@ public class MainActivity extends Activity  {
 
 
         for(BluetoothDevice x : pairedDevices) //goes through the entire set of paired devices
-            test.add(x.getName() + "\n" + x.getAddress()); //BluetoothDevice method to get the name of the paired device
+            mArrayAdapter.add(x.getName() + "\n" + x.getAddress()); //BluetoothDevice method to get the name of the paired device
         Toast.makeText(getApplicationContext(),"Showing Paired Devices",Toast.LENGTH_SHORT).show();
 
-        lv.setAdapter(test);
+        lv.setAdapter(mArrayAdapter);
 
 
         //keep in mind there's a difference between list of discoverables vs list of paired
@@ -164,7 +164,7 @@ public class MainActivity extends Activity  {
 
         BA.startDiscovery();
 
-
+        list_discoveries = new ArrayAdapter(this,android.R.layout.simple_list_item_1);
 
 
 
