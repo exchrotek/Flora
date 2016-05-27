@@ -72,14 +72,10 @@ public class MainActivity extends Activity  {
             }
         });
 
-        init();
+
 
     }
 
-    private void init()
-    {
-
-    }
 
     public void on(View v){ //when the turn on button is clicked, enable bluetooth
         b3.setVisibility(View.VISIBLE);
