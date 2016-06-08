@@ -12,6 +12,7 @@ import android.content.Intent;
 import android.content.IntentFilter;
 import android.os.Bundle;
 import android.os.Handler;
+import android.os.Message;
 import android.util.Log;
 import android.view.Menu;
 import android.view.MenuItem;
@@ -57,7 +58,12 @@ public class MainActivity extends Activity  {
         super.onCreate(savedInstanceState);
         setContentView(R.layout.activity_main);
 
-        mHandler = new Handler();
+        mHandler = new Handler(){
+            @Override
+            public void handleMessage(Message msg){
+
+            }
+        };
 
         discovery_txt = (TextView) findViewById(R.id.textView2);
 
@@ -465,8 +471,9 @@ public class MainActivity extends Activity  {
                     // Read from the InputStream
                     bytes = mmInStream.read(buffer);
                     // Send the obtained bytes to the UI activity
-                    mHandler.obtainMessage(MESSAGE_READ, bytes, -1, buffer)
+                    mHandler.obtainMessage(2, bytes, -1, buffer) //MESSAGE_READ = 2 in examples on Android Developer
                             .sendToTarget();
+
                 } catch (IOException e) {
                     break;
                 }
