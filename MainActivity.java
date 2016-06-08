@@ -27,6 +27,7 @@ import android.widget.Toast;
 import java.io.IOException;
 import java.io.InputStream;
 import java.io.OutputStream;
+import java.util.LinkedHashMap;
 import java.util.Set;
 import java.util.UUID;
 
@@ -45,6 +46,7 @@ public class MainActivity extends Activity  {
     ListView lv;
 
     protected ArrayAdapter list_discoveries;
+    LinkedHashMap<BluetoothDevice,String> devicesHash;
 
      BroadcastReceiver mReceiver;
 
@@ -66,6 +68,7 @@ public class MainActivity extends Activity  {
         };
 
         discovery_txt = (TextView) findViewById(R.id.textView2);
+        devicesHash = new LinkedHashMap();
 
         b1 = (Button) findViewById(R.id.button);
         b2=(Button)findViewById(R.id.button2);
@@ -100,6 +103,7 @@ public class MainActivity extends Activity  {
                 String info = ((TextView) view).getText().toString();
                 String address = info.substring(info.length() - 17);
                 Toast.makeText(MainActivity.this, address, Toast.LENGTH_SHORT).show();
+                ConnectThread test = new ConnectThread();
 
 
 
@@ -229,16 +233,17 @@ public class MainActivity extends Activity  {
                     // Get the BluetoothDevice object from the Intent
                     BluetoothDevice device = intent.getParcelableExtra(BluetoothDevice.EXTRA_DEVICE);
 
-
+                    String deviceName = device.getName();
+                    devicesHash.put(device,deviceName); //adds to hashmap the key and value
 
 
                             // Add the name and address to an array adapter to show in a ListView
-                            list_discoveries.add(device.getName() + "\n" + device.getAddress());
+                            list_discoveries.add(deviceName + "\n" + device.getAddress());
                             Toast.makeText(MainActivity.this, device.getName() + "\n" + device.getAddress(), Toast.LENGTH_SHORT).show();
 
 
 
-                }
+                }// action_found
                 else
                 {
                     Toast.makeText(MainActivity.this, "What is going on?", Toast.LENGTH_SHORT).show();
