@@ -11,6 +11,8 @@ import android.content.Context;
 import android.content.Intent;
 import android.content.IntentFilter;
 import android.os.Bundle;
+import android.os.Handler;
+import android.util.Log;
 import android.view.Menu;
 import android.view.MenuItem;
 import android.view.View;
@@ -22,6 +24,8 @@ import android.widget.TextView;
 import android.widget.Toast;
 
 import java.io.IOException;
+import java.io.InputStream;
+import java.io.OutputStream;
 import java.util.Set;
 import java.util.UUID;
 
@@ -30,6 +34,7 @@ public class MainActivity extends Activity  {
     private static final int REQUEST_ENABLE_BT = 1001;
     private static final String UUID_string = "f0ea9de0-2462-11e6-b67b-9e71128cae77";
     private static final UUID MY_UUID = UUID.fromString(UUID_string);
+    private String Bluetooth_info;
 
     Button b1,b2,b3,b4,b5;
     private BluetoothAdapter BA;
@@ -44,12 +49,15 @@ public class MainActivity extends Activity  {
 
     public TextView discovery_txt;// (TextView) findViewById(R.id.textView2);
 
+    private Handler mHandler;
 
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
         setContentView(R.layout.activity_main);
+
+        mHandler = new Handler();
 
         discovery_txt = (TextView) findViewById(R.id.textView2);
 
@@ -83,6 +91,13 @@ public class MainActivity extends Activity  {
                 // When clicked, show a toast with the TextView text
                 Toast.makeText(getApplicationContext(), ((TextView) view).getText(),
                         Toast.LENGTH_SHORT).show();
+                String info = ((TextView) view).getText().toString();
+                String address = info.substring(info.length() - 17);
+                Toast.makeText(MainActivity.this, address, Toast.LENGTH_SHORT).show();
+
+
+
+
 
 
             }
@@ -180,6 +195,12 @@ public class MainActivity extends Activity  {
 
     public void scan (View view){
 
+        if(BA.isDiscovering() == true) {
+
+            BA.cancelDiscovery();
+
+        } //if BA isDiscovering false
+
         BA.startDiscovery();
 
         list_discoveries = new ArrayAdapter(this,android.R.layout.simple_list_item_1);
@@ -197,11 +218,20 @@ public class MainActivity extends Activity  {
                 // When discovery finds a device
                 if (BluetoothDevice.ACTION_FOUND.equals(action)) {
                     Toast.makeText(MainActivity.this, "Action Found", Toast.LENGTH_SHORT).show();
+
+
                     // Get the BluetoothDevice object from the Intent
                     BluetoothDevice device = intent.getParcelableExtra(BluetoothDevice.EXTRA_DEVICE);
-                    // Add the name and address to an array adapter to show in a ListView
-                    list_discoveries.add(device.getName() + "\n" + device.getAddress());
-                    Toast.makeText(MainActivity.this, device.getName() + "\n" + device.getAddress(), Toast.LENGTH_SHORT).show();
+
+
+
+
+                            // Add the name and address to an array adapter to show in a ListView
+                            list_discoveries.add(device.getName() + "\n" + device.getAddress());
+                            Toast.makeText(MainActivity.this, device.getName() + "\n" + device.getAddress(), Toast.LENGTH_SHORT).show();
+
+
+
                 }
                 else
                 {
@@ -212,7 +242,7 @@ public class MainActivity extends Activity  {
             }
         };
 
-        Toast.makeText(MainActivity.this, "after broacastreceiver", Toast.LENGTH_SHORT).show();
+        Toast.makeText(MainActivity.this, "after broadcastreceiver", Toast.LENGTH_SHORT).show();
 // Register the BroadcastReceiver
         IntentFilter filter = new IntentFilter(BluetoothDevice.ACTION_FOUND);
         registerReceiver(mReceiver, filter); // Don't forget to unregister during onDestroy
@@ -265,7 +295,9 @@ public class MainActivity extends Activity  {
     public void onDestroy()
     {
         super.onDestroy();
-        BA.cancelDiscovery();
+        if (BA != null) {
+            BA.cancelDiscovery();
+        }
         unregisterReceiver(mReceiver);
         Toast.makeText(MainActivity.this, "Broadcast Receiver temporarily unregistered!", Toast.LENGTH_LONG).show();
     }
@@ -295,6 +327,11 @@ public class MainActivity extends Activity  {
         private final BluetoothSocket mmSocket;
         private final BluetoothDevice mmDevice;
 
+        //in the ConnectThread class, we connect phone as a client
+        //A final bluetoothDevice and a final bluetoothSocket are members of this class
+        //in the constructor, make a bluetooth device the argument
+        // and create  a temporary BluetoothSocket as a placeholder, set it to NULL
+        //then try getting BSocket to connect with phone
 
 
         public ConnectThread(BluetoothDevice device) {
@@ -311,6 +348,7 @@ public class MainActivity extends Activity  {
             mmSocket = tmp;
         }
 
+
         public void run() {
             // Cancel discovery because it will slow down the connection
             BA.cancelDiscovery();
@@ -319,6 +357,7 @@ public class MainActivity extends Activity  {
                 // Connect the device through the socket. This will block
                 // until it succeeds or throws an exception
                 mmSocket.connect();
+                Log.i("connected","device connected");
             } catch (IOException connectException) {
                 // Unable to connect; close the socket and get out
                 try {
@@ -327,7 +366,7 @@ public class MainActivity extends Activity  {
                 return;
             }
 
-            // Do work to manage the connection (in a separate thread)
+           // // Do work to manage the connection (in a separate thread)
            // manageConnectedSocket(mmSocket);
         }
 
@@ -338,8 +377,8 @@ public class MainActivity extends Activity  {
             } catch (IOException e) { }
         }
     }
-
-
+//
+//
     public class AcceptThread extends Thread {
         private final BluetoothServerSocket mmServerSocket;
 
@@ -374,8 +413,12 @@ public class MainActivity extends Activity  {
                 // If a connection was accepted
                 if (socket != null) {
                     // Do work to manage the connection (in a separate thread)
-                   // manageConnectedSocket(socket);
-                   // mmServerSocket.close();
+                    //manageConnectedSocket(socket);
+                    try {
+                        mmServerSocket.close();
+                    } catch (IOException e) {
+                        e.printStackTrace();
+                    }
                     break;
                 }
             }
@@ -390,6 +433,60 @@ public class MainActivity extends Activity  {
 
 
     }
+//
+    private class ConnectedThread extends Thread {
+        private final BluetoothSocket mmSocket;
+        private final InputStream mmInStream;
+        private final OutputStream mmOutStream;
+
+        public ConnectedThread(BluetoothSocket socket) {
+            mmSocket = socket;
+            InputStream tmpIn = null;
+            OutputStream tmpOut = null;
+
+            // Get the input and output streams, using temp objects because
+            // member streams are final
+            try {
+                tmpIn = socket.getInputStream();
+                tmpOut = socket.getOutputStream();
+            } catch (IOException e) { }
+
+            mmInStream = tmpIn;
+            mmOutStream = tmpOut;
+        }
+
+        public void run() {
+            byte[] buffer = new byte[1024];  // buffer store for the stream
+            int bytes; // bytes returned from read()
+
+            // Keep listening to the InputStream until an exception occurs
+            while (true) {
+                try {
+                    // Read from the InputStream
+                    bytes = mmInStream.read(buffer);
+                    // Send the obtained bytes to the UI activity
+                    mHandler.obtainMessage(MESSAGE_READ, bytes, -1, buffer)
+                            .sendToTarget();
+                } catch (IOException e) {
+                    break;
+                }
+            }
+        }
+
+        /* Call this from the main activity to send data to the remote device */
+        public void write(byte[] bytes) {
+            try {
+                mmOutStream.write(bytes);
+            } catch (IOException e) { }
+        }
+
+        /* Call this from the main activity to shutdown the connection */
+        public void cancel() {
+            try {
+                mmSocket.close();
+            } catch (IOException e) { }
+        }
+    }
 
 
-}
+} //end of activity
