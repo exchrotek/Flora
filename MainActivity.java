@@ -46,7 +46,7 @@ public class MainActivity extends Activity  {
     ListView lv;
 
     protected ArrayAdapter list_discoveries;
-    LinkedHashMap<BluetoothDevice,String> devicesHash;
+    LinkedHashMap<String,BluetoothDevice> devicesHash;
 
      BroadcastReceiver mReceiver;
 
@@ -95,6 +95,7 @@ public class MainActivity extends Activity  {
 //            }
 //        });
         lv.setTextFilterEnabled(true);
+        //trying to connect the device clicked on in the list
         lv.setOnItemClickListener(new AdapterView.OnItemClickListener() {
             public void onItemClick(AdapterView <? > arg0, View view, int position, long id) {
                 // When clicked, show a toast with the TextView text
@@ -103,7 +104,16 @@ public class MainActivity extends Activity  {
                 String info = ((TextView) view).getText().toString();
                 String address = info.substring(info.length() - 17);
                 Toast.makeText(MainActivity.this, address, Toast.LENGTH_SHORT).show();
-                ConnectThread test = new ConnectThread();
+
+                //get key (string) to the value (Bluetooth Device)
+                BluetoothDevice acquired = devicesHash.get(info);
+               // if(info == )
+                {
+                //    Toast.makeText(MainActivity.this, "True", Toast.LENGTH_SHORT).show();
+                }
+
+
+                //ConnectThread test = new ConnectThread(acquired);
 
 
 
@@ -220,8 +230,7 @@ public class MainActivity extends Activity  {
         Toast.makeText(getApplicationContext(), "List of Available Devices", Toast.LENGTH_SHORT).show();
 
         // Create a BroadcastReceiver for ACTION_FOUND
-        final BroadcastReceiver
-        mReceiver = new BroadcastReceiver() {
+        final BroadcastReceiver mReceiver = new BroadcastReceiver() {
             public void onReceive(Context context, Intent intent) {
                 String action = intent.getAction();
                 Toast.makeText(MainActivity.this, "Entered broadcast", Toast.LENGTH_SHORT).show();
@@ -234,7 +243,7 @@ public class MainActivity extends Activity  {
                     BluetoothDevice device = intent.getParcelableExtra(BluetoothDevice.EXTRA_DEVICE);
 
                     String deviceName = device.getName();
-                    devicesHash.put(device,deviceName); //adds to hashmap the key and value
+                    devicesHash.put(deviceName,device); //adds to hashmap the key and value
 
 
                             // Add the name and address to an array adapter to show in a ListView
@@ -333,6 +342,8 @@ public class MainActivity extends Activity  {
 //    }
 
 
+
+
     private class ConnectThread extends Thread {
 
         private final BluetoothSocket mmSocket;
@@ -388,9 +399,9 @@ public class MainActivity extends Activity  {
             } catch (IOException e) { }
         }
     }
-//
-//
-    public class AcceptThread extends Thread {
+
+
+    private class AcceptThread extends Thread {
         private final BluetoothServerSocket mmServerSocket;
 
         private final String NAME = "SGH-M919";
@@ -444,7 +455,9 @@ public class MainActivity extends Activity  {
 
 
     }
-//
+
+
+
     private class ConnectedThread extends Thread {
         private final BluetoothSocket mmSocket;
         private final InputStream mmInStream;
